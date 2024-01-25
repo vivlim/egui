@@ -72,9 +72,9 @@ pub fn now_sec() -> f64 {
 pub fn native_pixels_per_point() -> f32 {
     let pixels_per_point = web_sys::window().unwrap().device_pixel_ratio() as f32;
     if pixels_per_point > 0.0 && pixels_per_point.is_finite() {
-        pixels_per_point
+        pixels_per_point * 0.5
     } else {
-        1.0
+        0.5
     }
 }
 
@@ -137,8 +137,8 @@ fn resize_canvas_to_screen_size(canvas_id: &str, max_size_points: egui::Vec2) ->
     let height = parent.client_height();
 
     let canvas_real_size = Vec2 {
-        x: width as f32,
-        y: height as f32,
+        x: width as f32 * 0.5,
+        y: height as f32 * 0.5,
     };
 
     if width <= 0 || height <= 0 {
@@ -164,14 +164,21 @@ fn resize_canvas_to_screen_size(canvas_id: &str, max_size_points: egui::Vec2) ->
         .style()
         .set_property(
             "width",
-            &format!("{}px", round_to_even(canvas_size_points.x)),
+            &format!("{}px", round_to_even(canvas_size_points.x) * 2.0),
         )
         .ok()?;
     canvas
         .style()
         .set_property(
             "height",
-            &format!("{}px", round_to_even(canvas_size_points.y)),
+            &format!("{}px", round_to_even(canvas_size_points.y) * 2.0),
+        )
+        .ok()?;
+    canvas
+        .style()
+        .set_property(
+            "image-rendering",
+            "pixelated",
         )
         .ok()?;
     canvas.set_width(round_to_even(canvas_size_pixels.x) as u32);

@@ -78,6 +78,7 @@ pub struct FontImpl {
     pixels_per_point: f32,
     glyph_info_cache: RwLock<ahash::HashMap<char, GlyphInfo>>, // TODO(emilk): standard Mutex
     atlas: Arc<Mutex<TextureAtlas>>,
+    alias: f32,
 }
 
 impl FontImpl {
@@ -132,6 +133,7 @@ impl FontImpl {
             pixels_per_point,
             glyph_info_cache: Default::default(),
             atlas,
+            alias: tweak.alias,
         }
     }
 
@@ -225,7 +227,7 @@ impl FontImpl {
         if glyph_id.0 == 0 {
             None // unsupported character
         } else {
-            let glyph_info = self.allocate_glyph(glyph_id);
+            let glyph_info = self.allocate_glyph(glyph_id, self.alias);
             self.glyph_info_cache.write().insert(c, glyph_info);
             Some(glyph_info)
         }
@@ -263,7 +265,7 @@ impl FontImpl {
         self.ascent
     }
 
-    fn allocate_glyph(&self, glyph_id: ab_glyph::GlyphId) -> GlyphInfo {
+    fn allocate_glyph(&self, glyph_id: ab_glyph::GlyphId, alias: f32) -> GlyphInfo {
         assert!(glyph_id.0 != 0);
         use ab_glyph::{Font as _, ScaleFont};
 
@@ -286,7 +288,14 @@ impl FontImpl {
                         if 0.0 < v {
                             let px = glyph_pos.0 + x as usize;
                             let py = glyph_pos.1 + y as usize;
-                            image[(px, py)] = v;
+                            if alias > 0.0 {
+                                if v >= alias { // vivlim: crudely undo antialiasing
+                                    image[(px, py)] = 1.0;
+                                }
+                            }
+                            else {
+                                image[(px, py)] = v;
+                            }
                         }
                     });
                     glyph_pos

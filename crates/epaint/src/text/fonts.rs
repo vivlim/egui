@@ -174,6 +174,9 @@ pub struct FontTweak {
     /// A positive value shifts the text downwards.
     /// A negative value shifts it upwards.
     pub baseline_offset_factor: f32,
+
+    /// If nonzero, this will be used to scrungle antialiasing
+    pub alias: f32,
 }
 
 impl Default for FontTweak {
@@ -183,6 +186,7 @@ impl Default for FontTweak {
             y_offset_factor: 0.0,
             y_offset: 0.0,
             baseline_offset_factor: -0.0333, // makes the default fonts look more centered in buttons and such
+            alias: 0.0,
         }
     }
 }
